@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart'; // Direct import login screen
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Smart Locker App',
-      home: const SplashScreen(),
+      home: const LoginScreen(), // Terus buka Login Screen
     );
   }
 }
