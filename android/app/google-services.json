@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "23531283282",
+    "firebase_url": "https://smart-asset-locker-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "smart-asset-locker",
+    "storage_bucket": "smart-asset-locker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:23531283282:android:8ccdcdc9d93fb9b263d08b",
+        "android_client_info": {
+          "package_name": "com.example.smart_locker_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvD1EgNEXqx1xEhdpF2GYUZ3WvAAD3q3w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
