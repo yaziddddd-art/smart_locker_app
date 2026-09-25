@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart'; // Direct import login screen
+import 'package:firebase_core/firebase_core.dart';
+import 'screens/login_screen.dart';
 
-void main() {
+void main() async {
+  // 1. Wajib dipanggil agar Flutter binding siap sebelum inisialisasi async
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Inisialisasi Firebase App
+  await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 
@@ -12,8 +19,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Smart Locker App',
-      home: const LoginScreen(), // Terus buka Login Screen
+      title: 'Smart Locker',
+      home: const LoginScreen(),
+      routes: {
+        '/dashboard': (context) => const Scaffold(
+              body: Center(child: Text("Dashboard")),
+            ), // Sesuaikan dengan route dashboard kamu
+      },
     );
   }
 }
