@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'theme/neumorphic_theme.dart'; // Import theme kau
 
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -28,6 +29,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Smart Locker',
+      themeMode: ThemeMode.light, // Force guna Light Mode sahaja
+      theme: ThemeData(
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: NeoColors.background,
+      ),
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginScreen(),
@@ -47,11 +53,9 @@ class MyApp extends StatelessWidget {
           final args = settings.arguments;
           return MaterialPageRoute(
             builder: (context) {
-              // Jika data dihantar bersama navigator, pass ke AssetDetailScreen
-              if (args is Map<dynamic, dynamic>) {
+              if (args != null) {
                 return AssetDetailScreen(asset: args);
               }
-              // Fallback jika dipanggil tanpa argument
               return const Scaffold(
                 body: Center(
                   child: Text("No Asset Data Provided"),
