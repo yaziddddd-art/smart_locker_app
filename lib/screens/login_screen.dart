@@ -18,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
 
-  // Kemaskini 1: Buat Getters untuk Firebase supaya tidak menghalang UI semasa init
   FirebaseAuth get _auth => FirebaseAuth.instance;
   FirebaseDatabase get _database => FirebaseDatabase.instance;
 
@@ -35,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Ralat Sistem"),
+        title: const Text("System Error"),
         content: Text(message),
         actions: [
           TextButton(
@@ -53,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final name = _nameController.text.trim();
 
     if (email.isEmpty || password.isEmpty || (!isLoginMode && name.isEmpty)) {
-      _showErrorDialog("Sila isi semua ruangan yang diperlukan.");
+      _showErrorDialog("Please fill in all required fields.");
       return;
     }
 
@@ -61,23 +60,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       if (isLoginMode) {
-        // =============== LOGIK LOGIN FIREBASE ===============
-        await _auth.signInWithEmailAndPassword(email: email, password: password);
-        
-        if (mounted) {
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        if (userCredential.user != null && mounted) {
           Navigator.pushReplacementNamed(context, '/dashboard');
         }
       } else {
-        // =============== LOGIK REGISTER FIREBASE ===============
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
 
-        if (userCredential.user != null) {
-          String uid = userCredential.user!.uid;
-          await _database.ref().child('users').child(uid).set({
-            'uid': uid,
+        final user = userCredential.user;
+        if (user != null) {
+          await _database.ref().child('users').child(user.uid).set({
+            'uid': user.uid,
             'name': name,
             'email': email,
             'role': 'staff',
@@ -93,13 +93,13 @@ class _LoginScreenState extends State<LoginScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Akaun berjaya didaftar! Sila sign in.")),
+          const SnackBar(content: Text("Account registered successfully! Please sign in.")),
         );
       }
     } on FirebaseAuthException catch (e) {
-      _showErrorDialog(e.message ?? "Berlaku masalah pada Firebase Auth.");
+      _showErrorDialog(e.message ?? "An error occurred with Firebase Auth.");
     } catch (e) {
-      _showErrorDialog("Error tak dijangka: $e");
+      _showErrorDialog("Unexpected error: ${e.toString()}");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -115,7 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 1. LOGO SHIELD
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: const BoxDecoration(
@@ -130,7 +129,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // 2. TAJUK
               Text(
                 isLoginMode ? "Welcome" : "Create Account",
                 style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: NeoColors.textPrimary),
@@ -142,7 +140,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // 3. BORANG INPUT
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -184,7 +181,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // 4. BUTANG SIGN IN / REGISTER
               GestureDetector(
                 onTap: isLoading ? null : _handleSubmit,
                 child: Container(
@@ -210,7 +206,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // 5. TUKAR MODE
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
