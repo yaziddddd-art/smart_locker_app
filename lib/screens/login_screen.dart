@@ -44,72 +44,79 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleSubmit() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-    final name = _nameController.text.trim();
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+  final name = _nameController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || (!isLoginMode && name.isEmpty)) {
-      _showErrorDialog("Please fill in all required fields.");
-      return;
-    }
+  if (email.isEmpty || password.isEmpty || (!isLoginMode && name.isEmpty)) {
+    _showErrorDialog("Please fill in all required fields.");
+    return;
+  }
 
-    setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
-    try {
-      final auth = FirebaseAuth.instance;
+  try {
+    final auth = FirebaseAuth.instance;
 
-      if (isLoginMode) {
-        UserCredential userCredential = await auth.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+    if (isLoginMode) {
+      // Perform Sign In
+      UserCredential userCredential = await auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-        if (userCredential.user != null && mounted) {
-          Navigator.pushReplacementNamed(context, '/dashboard');
-        } else {
-          _showErrorDialog("User authentication failed.");
-        }
+      if (!mounted) return;
+
+      if (userCredential.user != null) {
+        // Navigate safely to dashboard
+        Navigator.of(context).pushReplacementNamed('/dashboard');
       } else {
-        UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-
-        final user = userCredential.user;
-        if (user != null) {
-          try {
-            final database = FirebaseDatabase.instance.ref();
-            await database.child('users').child(user.uid).set({
-              'uid': user.uid,
-              'name': name,
-              'email': email,
-              'role': 'staff',
-              'createdAt': ServerValue.timestamp,
-            });
-          } catch (dbError) {
-            debugPrint("Database write error: $dbError");
-          }
-        }
-
-        if (!mounted) return;
-
-        setState(() {
-          isLoginMode = true;
-          isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Account registered successfully! Please sign in.")),
-        );
+        _showErrorDialog("Authentication failed. Please try again.");
       }
-    } on FirebaseAuthException catch (e) {
-      _showErrorDialog(e.message ?? "An error occurred with Firebase Auth.");
-    } catch (e) {
-      _showErrorDialog("Unexpected error: ${e.toString()}");
-    } finally {
-      if (mounted) setState(() => isLoading = false);
+    } else {
+      // Perform Registration
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final user = userCredential.user;
+      if (user != null) {
+        try {
+          // Safe Realtime Database instance call
+          DatabaseReference ref = FirebaseDatabase.instance.ref("users/${user.uid}");
+          await ref.set({
+            'uid': user.uid,
+            'name': name,
+            'email': email,
+            'role': 'staff',
+            'createdAt': ServerValue.timestamp,
+          });
+        } catch (dbError) {
+          debugPrint("Database write skipped/failed: $dbError");
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        isLoginMode = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Account created! Please sign in.")),
+      );
+    }
+  } on FirebaseAuthException catch (e) {
+    _showErrorDialog(e.message ?? "Authentication failed.");
+  } catch (e) {
+    _showErrorDialog("Error: ${e.toString()}");
+  } finally {
+    if (mounted) {
+      setState(() => isLoading = false);
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -4,14 +4,7 @@ import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Elak app tersangkut / skrin hitam kalau Firebase lambat
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint("Firebase init error: $e");
-  }
-
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -24,6 +17,16 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Smart Locker',
       home: const LoginScreen(),
+      routes: {
+        '/dashboard': (context) => const Scaffold(
+              body: Center(
+                child: Text(
+                  "Dashboard",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+      },
     );
   }
 }
