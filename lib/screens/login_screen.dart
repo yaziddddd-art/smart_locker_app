@@ -18,9 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
 
-  FirebaseAuth get _auth => FirebaseAuth.instance;
-  FirebaseDatabase get _database => FirebaseDatabase.instance;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -59,30 +56,39 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => isLoading = true);
 
     try {
+      final auth = FirebaseAuth.instance;
+
       if (isLoginMode) {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        UserCredential userCredential = await auth.signInWithEmailAndPassword(
           email: email,
           password: password,
         );
 
         if (userCredential.user != null && mounted) {
           Navigator.pushReplacementNamed(context, '/dashboard');
+        } else {
+          _showErrorDialog("User authentication failed.");
         }
       } else {
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential = await auth.createUserWithEmailAndPassword(
           email: email,
           password: password,
         );
 
         final user = userCredential.user;
         if (user != null) {
-          await _database.ref().child('users').child(user.uid).set({
-            'uid': user.uid,
-            'name': name,
-            'email': email,
-            'role': 'staff',
-            'createdAt': ServerValue.timestamp,
-          });
+          try {
+            final database = FirebaseDatabase.instance.ref();
+            await database.child('users').child(user.uid).set({
+              'uid': user.uid,
+              'name': name,
+              'email': email,
+              'role': 'staff',
+              'createdAt': ServerValue.timestamp,
+            });
+          } catch (dbError) {
+            debugPrint("Database write error: $dbError");
+          }
         }
 
         if (!mounted) return;
