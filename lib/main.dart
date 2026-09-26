@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-// Import semua screens berdasarkan gambar
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -43,12 +42,22 @@ class MyApp extends StatelessWidget {
         '/splash': (context) => const SplashScreen(),
         '/unlock': (context) => const UnlockScreen(),
       },
-      // Untuk screen yang perlukan parameter macam AssetDetailScreen
       onGenerateRoute: (settings) {
         if (settings.name == '/asset-detail') {
           final args = settings.arguments;
           return MaterialPageRoute(
-            builder: (context) => AssetDetailScreen(asset: args),
+            builder: (context) {
+              // Jika data dihantar bersama navigator, pass ke AssetDetailScreen
+              if (args is Map<dynamic, dynamic>) {
+                return AssetDetailScreen(asset: args);
+              }
+              // Fallback jika dipanggil tanpa argument
+              return const Scaffold(
+                body: Center(
+                  child: Text("No Asset Data Provided"),
+                ),
+              );
+            },
           );
         }
         return null;
